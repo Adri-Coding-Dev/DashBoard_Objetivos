@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Objetivos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h1>📊 GoalTracker</h1>
+            </div>
+            <button class="nav-item active" onclick="showPage('dashboard')">🏠 Dashboard</button>
+            <button class="nav-item" onclick="showPage('goals')">🎯 Crear Objetivos</button>
+            <button class="nav-item" onclick="showPage('analytics')">📈 Análisis</button>
+            <button class="nav-item" onclick="showPage('objectives')">📋 Mis Objetivos</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="header">
+                    <h1>Dashboard Principal</h1>
+                    <p>Resumen general de tus objetivos y progreso</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalGoals">0</div>
+                        <div class="stat-label">Objetivos Totales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="completedGoals">0</div>
+                        <div class="stat-label">Completados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeGoals">0</div>
+                        <div class="stat-label">Activos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="successRate">0%</div>
+                        <div class="stat-label">Tasa de Éxito</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Progreso por Dificultad</h3>
+                        <canvas id="difficultyChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Completados vs Pendientes</h3>
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goals Creation Page -->
+            <div id="goals" class="page">
+                <div class="header">
+                    <h1>Crear Nuevo Objetivo</h1>
+                    <p>Define tus metas y parámetros de seguimiento</p>
+                </div>
+
+                <div class="form-container">
+                    <form id="goalForm">
+                        <div class="form-group">
+                            <label for="goalTitle">Título del Objetivo</label>
+                            <input type="text" id="goalTitle" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goalDescription">Descripción</label>
+                            <textarea id="goalDescription" rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goalDifficulty">Dificultad</label>
+                            <select id="goalDifficulty" required>
+                                <option value="">Selecciona dificultad</option>
+                                <option value="facil">Fácil</option>
+                                <option value="medio">Medio</option>
+                                <option value="dificil">Difícil</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goalFrequency">Frecuencia</label>
+                            <select id="goalFrequency" required>
+                                <option value="">Selecciona frecuencia</option>
+                                <option value="unico">Uso único</option>
+                                <option value="diario">Diario</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="mensual">Mensual</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goalDeadline">Fecha de Vencimiento (opcional)</label>
+                            <input type="date" id="goalDeadline">
+                        </div>
+
+                        <button type="submit" class="btn">Crear Objetivo</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Limpiar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="analytics" class="page">
+                <div class="header">
+                    <h1>Análisis Detallado</h1>
+                    <p>Estadísticas avanzadas de tu rendimiento</p>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Tendencia de Completados</h3>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Distribución por Frecuencia</h3>
+                        <canvas id="frequencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Objectives List Page -->
+            <div id="objectives" class="page">
+                <div class="header">
+                    <h1>Mis Objetivos</h1>
+                    <p>Gestiona y actualiza el estado de tus objetivos</p>
+                </div>
+
+                <div class="goals-list" id="goalsList">
+                    <!-- Goals will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for editing goals -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Editar Objetivo</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editTitle">Título</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Descripción</label>
+                    <textarea id="editDescription" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editDifficulty">Dificultad</label>
+                    <select id="editDifficulty" required>
+                        <option value="facil">Fácil</option>
+                        <option value="medio">Medio</option>
+                        <option value="dificil">Difícil</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editFrequency">Frecuencia</label>
+                    <select id="editFrequency" required>
+                        <option value="unico">Uso único</option>
+                        <option value="diario">Diario</option>
+                        <option value="semanal">Semanal</option>
+                        <option value="mensual">Mensual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDeadline">Fecha de Vencimiento</label>
+                    <input type="date" id="editDeadline">
+                </div>
+                <button type="submit" class="btn">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
